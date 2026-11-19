@@ -27,7 +27,7 @@ __all__ = [
 
 PROGRAM_NAME: Final[str] = "dockerhub-intel"
 PROJECT_NAME: Final[str] = "lupaxa-dockerhub-intel"
-PROGRAM_VERSION: Final[str] = "0.1.0"
+PROGRAM_VERSION: Final[str] = "0.1.1-rc1"
 PROGRAM_VERSION_STRING: Final[str] = f"{PROGRAM_NAME} v{PROGRAM_VERSION}"
 
 DEFAULT_PROFILE: Final[str] = "standard"
