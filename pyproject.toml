@@ -6,7 +6,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "lupaxa-dockerhub-intel"
-version = "0.1.1-rc1"
+version = "0.1.1"
 description = "Monitor an explicit collection of Docker Hub repositories from the local machine."
 readme = "README.md"
 requires-python = ">=3.11"
