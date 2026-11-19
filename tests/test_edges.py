@@ -577,8 +577,14 @@ async def test_cancelled_sync_is_recorded(
     )
     await asyncio.sleep(0.05)
     task.cancel()
-    with pytest.raises(asyncio.CancelledError):
-        await task
+    done, pending = await asyncio.wait({task}, timeout=1)
+    assert task in done
+    assert not pending
+    assert task.cancelled()
+    cursor = await database._db().execute("SELECT status FROM sync_runs")
+    row = await cursor.fetchone()
+    assert row is not None
+    assert row["status"] == "cancelled"
     await database.close()
 
 

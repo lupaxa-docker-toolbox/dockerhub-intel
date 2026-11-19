@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from pathlib import Path
+import re
 
 import pytest
 from typer.testing import CliRunner
@@ -14,6 +15,11 @@ from lupaxa.dockerhub_intel.config.defaults import write_default_files
 from lupaxa.dockerhub_intel.constants import EXIT_SUCCESS
 
 runner = CliRunner()
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(text: str) -> str:
+    return _ANSI.sub("", text)
 
 
 def test_missing_token_is_anonymous() -> None:
@@ -52,15 +58,16 @@ def test_callback_keeps_the_token_without_printing_it(
     )
     assert result.exit_code == EXIT_SUCCESS
     assert auth.active_token == "from-cli"
-    assert "from-cli" not in result.stdout
-    assert "from-cli" not in result.stderr
+    assert "from-cli" not in _plain(result.stdout)
+    assert "from-cli" not in _plain(result.stderr)
 
 
 def test_help_names_the_token_option_without_its_value(monkeypatch) -> None:
     monkeypatch.setenv(TOKEN_ENV, "from-env")
     result = runner.invoke(app, ["--token", "from-cli", "--help"])
+    output = _plain(result.stdout)
     assert result.exit_code == EXIT_SUCCESS
-    assert "--token" in result.stdout
-    assert TOKEN_ENV in result.stdout
-    assert "from-cli" not in result.stdout
-    assert "from-env" not in result.stdout
+    assert "--token" in output
+    assert TOKEN_ENV in output
+    assert "from-cli" not in output
+    assert "from-env" not in output

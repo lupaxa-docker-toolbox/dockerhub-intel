@@ -13,10 +13,15 @@ import typer
 from lupaxa.dockerhub_intel import auth
 from lupaxa.dockerhub_intel.app import Service
 from lupaxa.dockerhub_intel.auth import TOKEN_ENV, resolve_token, use_token
+from lupaxa.dockerhub_intel.config.defaults import generate_default_files
 from lupaxa.dockerhub_intel.config.loader import LoadedConfig
 from lupaxa.dockerhub_intel.config.models import RepositorySpec
 from lupaxa.dockerhub_intel.config.paths import config_directory, data_directory
-from lupaxa.dockerhub_intel.constants import PROGRAM_NAME, PROGRAM_VERSION_STRING
+from lupaxa.dockerhub_intel.constants import (
+    EXIT_CONFIG,
+    PROGRAM_NAME,
+    PROGRAM_VERSION_STRING,
+)
 from lupaxa.dockerhub_intel.errors import (
     AuthError,
     ChecksFailed,
@@ -42,7 +47,10 @@ app = typer.Typer(
 )
 repo_app = typer.Typer(help="Manage the local repository list.", no_args_is_help=True)
 profile_app = typer.Typer(help="Inspect profiles.", no_args_is_help=True)
-config_app = typer.Typer(help="Inspect configuration.", no_args_is_help=True)
+config_app = typer.Typer(
+    help="Show, validate, and create configuration.",
+    no_args_is_help=True,
+)
 cache_app = typer.Typer(help="Inspect the local cache.", no_args_is_help=True)
 app.add_typer(repo_app, name="repo")
 app.add_typer(profile_app, name="profile")
@@ -238,6 +246,34 @@ def profile_tree(
 def profile_validate() -> None:
     """Validate profile inheritance."""
     _run(_validate("profiles"))
+
+
+@config_app.command("init")
+def config_init(
+    force: bool = typer.Option(
+        False,
+        "--force",
+        help="Overwrite existing files with the defaults.",
+    ),
+) -> None:
+    """Write config.yml, profiles.yml, and repositories.yml filled with defaults."""
+    written, kept = generate_default_files(_default_paths(_options.config), force=force)
+    for path in written:
+        typer.echo(f"Wrote {path}.")
+    for path in kept:
+        typer.echo(f"Kept {path}. Use --force to overwrite.")
+    if not written:
+        raise typer.Exit(code=EXIT_CONFIG)
+
+
+def _default_paths(config: Path | None) -> tuple[Path, Path, Path]:
+    if config is None:
+        directory = config_directory()
+        main = directory / "config.yml"
+    else:
+        main = config
+        directory = config.parent
+    return main, directory / "profiles.yml", directory / "repositories.yml"
 
 
 @config_app.command("show")

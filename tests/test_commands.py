@@ -6,6 +6,7 @@ import asyncio
 import json
 import logging
 from pathlib import Path
+import re
 
 import httpx
 import pytest
@@ -32,6 +33,11 @@ from lupaxa.dockerhub_intel.tui.application import (
 )
 
 runner = CliRunner()
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(text: str) -> str:
+    return _ANSI.sub("", text)
 
 
 def _isolate(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
@@ -42,6 +48,47 @@ def _isolate(monkeypatch: pytest.MonkeyPatch, tmp_path: Path) -> Path:
     monkeypatch.delenv("DOCKERHUB_TOKEN", raising=False)
     write_default_files(config)
     return config / "config.yml"
+
+
+def test_config_init_writes_defaults_and_force_replaces_them(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    monkeypatch.setenv("DOCKERHUB_INTEL_CONFIG_DIR", str(tmp_path / "config"))
+    monkeypatch.setenv("DOCKERHUB_INTEL_DATA_DIR", str(tmp_path / "data"))
+    created = runner.invoke(app, ["config", "init"])
+    assert created.exit_code == EXIT_SUCCESS
+    directory = tmp_path / "config"
+    config = directory / "config.yml"
+    profiles = directory / "profiles.yml"
+    repositories = directory / "repositories.yml"
+    assert "version: 1" in config.read_text(encoding="utf-8")
+    assert "standard:" in profiles.read_text(encoding="utf-8")
+    assert repositories.read_text(encoding="utf-8") == "repositories: []\n"
+    assert config.stat().st_mode & 0o777 == 0o600
+    assert directory.stat().st_mode & 0o777 == 0o700
+    repositories.write_text("repositories:\n  - lupaxa/alpine-bash\n", encoding="utf-8")
+    kept = runner.invoke(app, ["config", "init"])
+    assert kept.exit_code == EXIT_CONFIG
+    assert "alpine-bash" in repositories.read_text(encoding="utf-8")
+    assert "Use --force to overwrite." in _plain(kept.stdout)
+    replaced = runner.invoke(app, ["config", "init", "--force"])
+    assert replaced.exit_code == EXIT_SUCCESS
+    assert repositories.read_text(encoding="utf-8") == "repositories: []\n"
+
+
+def test_config_init_writes_a_missing_file_and_keeps_the_others(tmp_path: Path) -> None:
+    config = tmp_path / "custom.yml"
+    result = runner.invoke(app, ["--config", str(config), "config", "init"])
+    assert result.exit_code == EXIT_SUCCESS
+    assert config.is_file()
+    assert (tmp_path / "profiles.yml").is_file()
+    (tmp_path / "profiles.yml").unlink()
+    config.write_text("version: 1\n", encoding="utf-8")
+    again = runner.invoke(app, ["--config", str(config), "config", "init"])
+    assert again.exit_code == EXIT_SUCCESS
+    assert config.read_text(encoding="utf-8") == "version: 1\n"
+    assert "standard:" in (tmp_path / "profiles.yml").read_text(encoding="utf-8")
+    assert "Kept" in _plain(again.stdout)
 
 
 def test_repository_commands_round_trip(

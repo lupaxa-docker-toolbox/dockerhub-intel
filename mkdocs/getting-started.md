@@ -32,6 +32,8 @@ The default directory follows platform conventions. On macOS and Linux that is:
 └── repositories.yml
 ```
 
+`dockerhub-intel config init` writes these files. Existing files stay unless you pass `--force`.
+
 `config.yml` points at the profile and repository files. A path in `--config` replaces the main file. Relative paths in that file are resolved from the main file's directory.
 
 Credentials are not stored in these files. Public repositories need no token.

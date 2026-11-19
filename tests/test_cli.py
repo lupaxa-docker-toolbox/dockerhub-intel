@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import re
 import sys
 
 import pytest
@@ -11,19 +12,25 @@ from lupaxa.dockerhub_intel.cli import _version, app, main
 from lupaxa.dockerhub_intel.constants import EXIT_SUCCESS, PROGRAM_VERSION_STRING
 
 runner = CliRunner()
+_ANSI = re.compile(r"\x1b\[[0-9;]*m")
+
+
+def _plain(text: str) -> str:
+    return _ANSI.sub("", text)
 
 
 def test_help_exits_zero() -> None:
     result = runner.invoke(app, ["--help"])
+    output = _plain(result.stdout)
     assert result.exit_code == EXIT_SUCCESS
-    assert "dockerhub-intel" in result.stdout
-    assert "--version" in result.stdout
+    assert "dockerhub-intel" in output
+    assert "--version" in output
 
 
 def test_version_exits_zero() -> None:
     result = runner.invoke(app, ["--version"])
     assert result.exit_code == EXIT_SUCCESS
-    assert PROGRAM_VERSION_STRING in result.stdout
+    assert PROGRAM_VERSION_STRING in _plain(result.stdout)
 
 
 def test_version_callback_false_is_a_no_op() -> None:
@@ -33,7 +40,7 @@ def test_version_callback_false_is_a_no_op() -> None:
 def test_no_arguments_print_help() -> None:
     result = runner.invoke(app, [])
     assert result.exit_code == EXIT_SUCCESS
-    assert "--version" in result.stdout
+    assert "--version" in _plain(result.stdout)
 
 
 def test_main_version(monkeypatch: pytest.MonkeyPatch) -> None:

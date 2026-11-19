@@ -50,6 +50,7 @@ Expired rows stay readable until the next successful refresh or an explicit purg
 | `profile show`     | Show the resolved checks for one profile                     |
 | `profile tree`     | Show each profile and its parent                             |
 | `profile validate` | Validate profile inheritance                                 |
+| `config init`      | Write the default configuration files                        |
 | `config show`      | Show effective settings. The token is omitted                |
 | `config validate`  | Validate the configuration files                             |
 | `config paths`     | Show the configuration and database directories              |
