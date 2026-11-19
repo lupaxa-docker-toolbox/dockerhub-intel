@@ -25,6 +25,9 @@ jobs:
   link-checker:
     name: Link Checker
     uses: the-lupaxa-project/workflows/.github/workflows/reusable-link-checker.yml@master
+    with:
+      # The Hub API root answers 404. It is not a documentation page.
+      whitelist: https://hub.docker.com/v2
     secrets: inherit
 
   generate-workflow-summary:
