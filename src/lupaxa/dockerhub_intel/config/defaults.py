@@ -24,6 +24,9 @@ files:
 defaults:
   profile: standard
 
+display:
+  date_format: DD/MM/YYYY HH:mm UTC
+
 sync:
   concurrency: 10
   timeout: 15

@@ -5,12 +5,14 @@ from __future__ import annotations
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
 from lupaxa.dockerhub_intel.constants import CHECK_NAMES, DEFAULT_PROFILE, UNGROUPED
+from lupaxa.dockerhub_intel.dates import DEFAULT_DATE_FORMAT, require_date_format
 from lupaxa.dockerhub_intel.dockerhub.names import canonical_repository
 
 __all__ = [
     "AppConfig",
     "CacheSettings",
     "DefaultsSettings",
+    "DisplaySettings",
     "DockerHubSettings",
     "FileSettings",
     "HistorySettings",
@@ -133,6 +135,17 @@ class DefaultsSettings(_StrictModel):
         return text
 
 
+class DisplaySettings(_StrictModel):
+    """How the Updated column is shown."""
+
+    date_format: str = DEFAULT_DATE_FORMAT
+
+    @field_validator("date_format")
+    @classmethod
+    def _date_format(cls, value: str) -> str:
+        return require_date_format(value)
+
+
 class ProfileSpec(_StrictModel):
     """One monitoring profile. Omitted checks are inherited."""
 
@@ -215,6 +228,7 @@ class AppConfig(_StrictModel):
     dockerhub: DockerHubSettings = Field(default_factory=DockerHubSettings)
     files: FileSettings = Field(default_factory=FileSettings)
     defaults: DefaultsSettings = Field(default_factory=DefaultsSettings)
+    display: DisplaySettings = Field(default_factory=DisplaySettings)
     sync: SyncSettings = Field(default_factory=SyncSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)
     history: HistorySettings = Field(default_factory=HistorySettings)

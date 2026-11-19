@@ -24,6 +24,7 @@ from lupaxa.dockerhub_intel.config.paths import (
     default_config_file,
 )
 from lupaxa.dockerhub_intel.config.profiles import resolve_profile
+from lupaxa.dockerhub_intel.dates import format_date
 from lupaxa.dockerhub_intel.dockerhub.client import HubClient
 from lupaxa.dockerhub_intel.dockerhub.names import canonical_repository, web_url
 from lupaxa.dockerhub_intel.errors import ConfigError, NotFound
@@ -170,7 +171,7 @@ class Service:
                     "enabled": spec.enabled,
                     "pulls": None if cached is None else cached.get("pull_count"),
                     "stars": None if cached is None else cached.get("star_count"),
-                    "updated": updated,
+                    "updated": self._shown_updated(updated),
                     "status": None if cached is None else cached.get("status"),
                     "stale": self._stale(spec, updated),
                     "error": None if cached is None else cached.get("metadata_error"),
@@ -213,7 +214,7 @@ class Service:
             "status": None if cached is None else cached.get("status"),
             "pulls": None if cached is None else cached.get("pull_count"),
             "stars": None if cached is None else cached.get("star_count"),
-            "updated": updated,
+            "updated": self._shown_updated(updated),
             "growth": growth,
             "stale": stale,
             "tags": [tag.name for tag in tags],
@@ -271,6 +272,7 @@ class Service:
             rows = rows[:top]
         for row in rows:
             row.pop("_change", None)
+            row["updated"] = self._shown_updated(row.get("updated"))
         return rows
 
     async def tag_rows(self, specs: list[RepositorySpec]) -> list[dict[str, object]]:
@@ -283,7 +285,7 @@ class Service:
                         "repository": spec.repo,
                         "tag": tag.name,
                         "digest": tag.digest,
-                        "updated": tag.updated_at,
+                        "updated": self._shown_updated(tag.updated_at),
                         "size": tag.full_size,
                         "platforms": ", ".join(tag.platforms),
                     }
@@ -316,6 +318,11 @@ class Service:
             for event in events
             if event["repo"] in allowed
         ]
+
+    def _shown_updated(self, value: object) -> object:
+        if not isinstance(value, str) or value.strip() == "":
+            return value
+        return format_date(value, self._config().app.display.date_format)
 
     def _stale(self, spec: RepositorySpec, updated: object) -> str:
         settings = self._config().app.checks.stale

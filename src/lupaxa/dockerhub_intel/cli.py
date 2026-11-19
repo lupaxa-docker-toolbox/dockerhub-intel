@@ -671,6 +671,7 @@ async def _config_show(fmt: str, output: Path | None) -> None:
             {"setting": "concurrency", "value": settings.sync.concurrency},
             {"setting": "token_env", "value": settings.dockerhub.token_env},
             {"setting": "retention_days", "value": settings.history.retention_days},
+            {"setting": "date_format", "value": settings.display.date_format},
             {"setting": "page_size", "value": settings.sync.page_size},
         ]
     finally:

@@ -33,6 +33,15 @@
 
 Expired rows stay readable until the next successful refresh or an explicit purge. History is kept indefinitely unless `history.retention_days` is set above zero. Cleanup never removes the latest row needed to browse offline.
 
+## Dates
+
+`display.date_format` controls the Updated column.
+The default is `DD/MM/YYYY HH:mm UTC`.
+`YYYY`, `MM`, and `DD` appear once each.
+`HH` and `mm` are optional and must appear together.
+`ss` and `UTC` are optional with the time.
+Sorting still uses the stored timestamp.
+
 ## Commands
 
 | Command            | Purpose                                                      |
