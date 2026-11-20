@@ -17,6 +17,7 @@ __all__ = ["column_heading", "paint_cell", "render", "table_fields", "write_text
 _RIGHT = frozenset({"pulls", "stars", "size", "rows", "percent", "growth"})
 _LABELS = {
     "repository": "Repository",
+    "visibility": "Visibility",
     "group": "Group",
     "profile": "Profile",
     "enabled": "Enabled",
@@ -186,6 +187,8 @@ def _style(field: str, text: str) -> str:
     folded = text.strip().casefold()
     if field == "error" and text:
         return "red"
+    if field == "visibility":
+        return {"public": "green", "private": "magenta"}.get(folded, "")
     if field == "enabled":
         return {"yes": "green", "no": "dim"}.get(folded, "")
     if field == "stale":

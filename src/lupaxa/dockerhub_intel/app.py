@@ -166,6 +166,7 @@ class Service:
             rows.append(
                 {
                     "repository": spec.repo,
+                    "visibility": None if cached is None else cached.get("visibility"),
                     "group": spec.group,
                     "profile": profile,
                     "enabled": spec.enabled,
@@ -204,13 +205,13 @@ class Service:
         stale = self._stale(spec, updated)
         return {
             "repository": name,
+            "visibility": None if cached is None else cached.get("visibility"),
             "url": web_url(name),
             "group": spec.group,
             "profile": spec.profile or self._config().app.defaults.profile,
             "labels": spec.labels,
             "enabled": spec.enabled,
             "description": None if cached is None else cached.get("description"),
-            "visibility": None if cached is None else cached.get("visibility"),
             "status": None if cached is None else cached.get("status"),
             "pulls": None if cached is None else cached.get("pull_count"),
             "stars": None if cached is None else cached.get("star_count"),

@@ -433,6 +433,10 @@ def test_dashboard_paints_status_and_detail_fields() -> None:
     enabled = _painted("enabled", {"enabled": False})
     assert "No" in repr(enabled)
     assert "dim" in repr(enabled)
+    public = _painted("visibility", {"visibility": "public"})
+    private = _painted("visibility", {"visibility": "private"})
+    assert "green" in repr(public)
+    assert "magenta" in repr(private)
     pairs = _detail_pairs(
         {
             "repository": "library/nginx",
@@ -454,6 +458,7 @@ def test_dashboard_paints_status_and_detail_fields() -> None:
         }
     )
     fields = [field for field, _value in pairs]
+    assert fields[1] == "Visibility"
     assert "Growth previous" in fields
     assert "Growth 24h" not in fields
     assert "Labels" in fields

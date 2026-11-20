@@ -14,6 +14,8 @@ Synchronisation reads Docker Hub. Everything else reads the local cache, includi
 | image_details | Manifest metadata. Layers are not downloaded                     |
 | stale         | Whether a repository or tag is older than a configured threshold |
 
+The repository list shows Visibility as its second column. `repo show` and the dashboard detail show it under the repository name. Public is green and private is magenta.
+
 A profile inherits from one parent with `extends`. A repository `checks` block overrides that profile for one repository only.
 
 ## Pull Counts

@@ -131,9 +131,12 @@ async def test_updated_follows_the_configured_format(
         await _save(service, "library/redis", "2020-02-01T08:30:00Z")
         listed = await service.repo_rows(service.repositories())
         rows = {row["repository"]: row for row in listed}
+        assert list(rows["library/nginx"])[:2] == ["repository", "visibility"]
+        assert rows["library/nginx"]["visibility"] == "public"
         assert rows["library/nginx"]["updated"] == "15/01/2020"
         assert rows["library/redis"]["updated"] == "01/02/2020"
         shown = await service.show("library/nginx")
+        assert list(shown)[:2] == ["repository", "visibility"]
         assert shown["updated"] == "15/01/2020"
         stats = await service.stats_rows(
             service.repositories(),

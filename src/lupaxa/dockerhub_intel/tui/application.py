@@ -46,7 +46,10 @@ class RepoDetail(ModalScreen[None]):
                 for field, value in _detail_pairs(self.shown):
                     with Horizontal(classes="detail-row"):
                         yield Static(field, classes="detail-field")
-                        yield Static(value, classes="detail-value")
+                        yield Static(
+                            _detail_value(field, value),
+                            classes="detail-value",
+                        )
 
 
 class Dashboard(App[None]):
@@ -253,7 +256,14 @@ class Dashboard(App[None]):
         for row in rows:
             haystack = " ".join(
                 str(row.get(key) or "")
-                for key in ("repository", "group", "profile", "status", "stale")
+                for key in (
+                    "repository",
+                    "visibility",
+                    "group",
+                    "profile",
+                    "status",
+                    "stale",
+                )
             )
             if folded and folded not in haystack.casefold():
                 continue
@@ -289,19 +299,25 @@ def _plain(value: object) -> str:
     return str(value)
 
 
+def _detail_value(field: str, value: str) -> str | Text:
+    if field == "Visibility":
+        return paint_cell("visibility", {"visibility": value})
+    return value
+
+
 def _detail_pairs(shown: dict[str, object]) -> list[tuple[str, str]]:
     growth = shown.get("growth")
     tags = shown.get("tags")
     labels = shown.get("labels")
     pairs = [
         ("Repository", _plain(shown.get("repository"))),
+        ("Visibility", _plain(shown.get("visibility"))),
         ("URL", _plain(shown.get("url"))),
         ("Group", _plain(shown.get("group"))),
         ("Profile", _plain(shown.get("profile"))),
         ("Labels", ", ".join(labels) if isinstance(labels, list) else ""),
         ("Enabled", _plain(shown.get("enabled"))),
         ("Description", _plain(shown.get("description"))),
-        ("Visibility", _plain(shown.get("visibility"))),
         ("Status", _plain(shown.get("status"))),
         ("Pulls", _plain(shown.get("pulls"))),
         ("Stars", _plain(shown.get("stars"))),
